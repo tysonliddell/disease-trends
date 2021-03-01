@@ -17,7 +17,7 @@ const getPubMedCounts = (htmlText) => {
   const rowsWithoutHeader = Array.from(table.rows).slice(1)
   rowsWithoutHeader.forEach(row => {
     const [year, count] = [
-      parseInt(row.children[0].innerHTML),
+      row.children[0].innerHTML.trim(),
       parseInt(row.children[1].innerHTML)
     ]
     countByYear.push({year, count})
@@ -27,8 +27,9 @@ const getPubMedCounts = (htmlText) => {
 
 const handler = async function (event, context) {
   try {
-    const term = event.queryStringParameters.term;
-    const url = `https://pubmed.ncbi.nlm.nih.gov/?term=${term}`;
+    const disease = event.queryStringParameters.term;
+    const url = `https://pubmed.ncbi.nlm.nih.gov/?term=${disease}`;
+    console.log(`Sending PubMed search request as ${url}`)
     const response = await fetch(url, {
       headers: { Accept: 'text/html' },
     })
@@ -40,7 +41,7 @@ const handler = async function (event, context) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ counts: getPubMedCounts(data) }),
+      body: JSON.stringify({ disease, counts: getPubMedCounts(data) }),
     }
   } catch (error) {
     console.log(error)
